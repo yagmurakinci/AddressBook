@@ -1,0 +1,87 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+    Layout = "~/Views/Shared/_LayoutHomeChart.cshtml";
+
+}
+
+@if (Context.User.Identity?.Name == null)
+{
+    <p>buraya resim gelecektir</p>
+}
+else
+{
+    <div class="text-left">
+        <a class="btn btn-primary" asp-action="AddAddress"
+       asp-controller="Home">
+            Yeni Adres Ekle
+        </a>
+    </div>
+
+    <div class="row">
+        <div id="donutcontainer"
+         style="width: 550px; height: 400px; margin: 0 auto">
+        </div>
+    </div>
+
+
+
+}
+
+@section Scripts{
+
+    <script language="JavaScript">
+    var donutdata = [];
+
+        $(document).ready(function() {
+            //GetPiedonutChartData
+            $.ajax({
+                type: "Get",
+                url: '/Home/GetPiedonutChartData',
+                success: function(res) {
+                    if (res.issuccess) {
+                        console.log(res.data);
+                      //  donutdata = "[";
+                      //  $.each(res.data, function() {
+                      //      donutdata += "['"+this.cityName+"' ,"+this.addressCount+"],";
+                      // });
+                      ////  donutdata = donutdata.trimEnd(',');
+                      //  donutdata+= "['Deneme', 45.0]";
+                      //  donutdata+= "]";
+                          $.each(res.data, function() {
+                              donutdata.push(this);
+                       });
+
+                        console.log(donutdata);
+                    }
+                    else {
+                        alert(res.message);
+                    }
+                },
+                error: function(res) {
+                    alert(res.message);
+                }
+            });
+        });
+         function drawChart() {
+                // Define the chart to be drawn.
+                var data = new google.visualization.DataTable();
+                data.addColumn('string', 'İl');
+                data.addColumn('number', 'Percentage');
+                data.addRows(donutdata);
+
+                // Set chart options
+                var options = {
+                    'title': 'Sistemdeki Adresleriniz',
+                    'width': 550,
+                    'height': 400,
+                    pieHole: 0.4
+                };
+
+                // Instantiate and draw the chart.
+                var chart = new google.visualization.PieChart(document.getElementById('donutcontainer'));
+                chart.draw(data, options);
+            }
+            google.charts.setOnLoadCallback(drawChart);
+
+    </script>
+}
